@@ -15,6 +15,7 @@
   "description": "An eye relaxation reminder app that helps reduce eye strain",
   "devDependencies": {
     "electron": "^36.2.1",
+    "electron-builder": "^26.0.12",
     "electron-packager": "^17.1.2"
   },
   "build": {
@@ -36,7 +37,11 @@
       {
         "from": "public",
         "to": "public",
-        "filter": ["*.mp3", "*.wav", "*.png"]
+        "filter": [
+          "*.mp3",
+          "*.wav",
+          "*.png"
+        ]
       }
     ]
   }

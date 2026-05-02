@@ -1,7 +1,13 @@
 // preload.js
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose a minimal API to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
-  // We'll add functions here if needed in the future
+  // Settings window functions
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  closeWindow: () => ipcRenderer.send('close-window'),
+
+  // Video reminder functions
+  setVideoDuration: (duration) => ipcRenderer.send('set-video-duration', duration)
 });

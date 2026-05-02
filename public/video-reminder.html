@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        video {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .close-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            pointer-events: none;
+            animation: fadeInOut 2s infinite;
+            text-align: center;
+        }
+
+        .close-hint div:last-child {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .timer {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @keyframes fadeInOut {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="video-container">
+        <video id="catVideo" loop autoplay muted playsinline>
+            <source src="cat-rest.webm" type="video/webm">
+            <source src="cat-rest.mp4" type="video/mp4">
+        </video>
+        <canvas id="catCanvas"></canvas>
+    </div>
+    <div class="close-hint">
+        <div>Click anywhere or press ESC to close</div>
+        <div>Window closes automatically...</div>
+    </div>
+    <div class="timer" id="timer">10s</div>
+
+    <script>
+        const canvas = document.getElementById('catCanvas');
+        const ctx = canvas.getContext('2d');
+        const video = document.getElementById('catVideo');
+        const timerDisplay = document.getElementById('timer');
+        let videoDuration = 10;
+        let startTime = Date.now();
+        let useCanvas = true;
+        let displayMode = 'animation';
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function setTimer(seconds) {
+            videoDuration = seconds;
+            startTime = Date.now();
+            timerDisplay.textContent = videoDuration + 's';
+        }
+
+        function fallbackToCanvas() {
+            useCanvas = true;
+            displayMode = 'animation';
+            canvas.style.display = 'block';
+            video.style.display = 'none';
+            animate();
+        }
+
+        async function initializeSettings() {
+            try {
+                const settings = await window.electronAPI.getSettings();
+                if (settings && typeof settings.videoDurationSeconds === 'number') {
+                    setTimer(settings.videoDurationSeconds);
+                }
+                displayMode = (settings && settings.displayMode) || 'animation';
+
+                if (displayMode === 'video') {
+                    useCanvas = false;
+                    canvas.style.display = 'none';
+                    video.style.display = 'block';
+                    if (settings && settings.videoFile) {
+                        video.src = settings.videoFile;
+                    }
+                    video.load();
+                    video.play().catch(() => {
+                        fallbackToCanvas();
+                    });
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to load reminder settings:', error);
+            }
+
+            // Default animation mode path
+            useCanvas = true;
+            canvas.style.display = 'block';
+            video.style.display = 'none';
+            animate();
+        }
+
+        window.addEventListener('DOMContentLoaded', initializeSettings);
+
+        function drawCat(x, y, scale = 1, eyesOpen = 1) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            ctx.lineCap = 'round';
+
+            // Tail behind body
+            ctx.strokeStyle = '#F7A74D';
+            ctx.lineWidth = 22;
+            ctx.beginPath();
+            ctx.moveTo(80, 40);
+            ctx.quadraticCurveTo(130, 80, 100, 140);
+            ctx.stroke();
+
+            // Body
+            ctx.fillStyle = '#F7A74D';
+            ctx.beginPath();
+            ctx.ellipse(0, 90, 90, 65, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(-20, 65, 36, 20, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = '#F7A74D';
+            ctx.beginPath();
+            ctx.ellipse(0, -20, 70, 68, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ears
+            ctx.beginPath();
+            ctx.moveTo(-40, -70);
+            ctx.lineTo(-72, -110);
+            ctx.lineTo(-15, -80);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(40, -70);
+            ctx.lineTo(72, -110);
+            ctx.lineTo(15, -80);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#FFCC99';
+            ctx.beginPath();
+            ctx.moveTo(-44, -82);
+            ctx.lineTo(-58, -102);
+            ctx.lineTo(-30, -90);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(44, -82);
+            ctx.lineTo(58, -102);
+            ctx.lineTo(30, -90);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cheeks
+            ctx.fillStyle = 'rgba(255, 128, 150, 0.55)';
+            ctx.beginPath();
+            ctx.arc(-52, -5, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(52, -5, 16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eyes
+            const eyeHeight = Math.max(6, 20 * eyesOpen);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.ellipse(-30, -16, 20, eyeHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(30, -16, 20, eyeHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#3B1D0C';
+            ctx.beginPath();
+            ctx.arc(-30, -16, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(30, -16, 9, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.arc(-24, -22, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(34, -22, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose
+            ctx.fillStyle = '#D65A5A';
+            ctx.beginPath();
+            ctx.moveTo(0, -2);
+            ctx.lineTo(-7, 10);
+            ctx.lineTo(7, 10);
+            ctx.closePath();
+            ctx.fill();
+
+            // Mouth
+            ctx.strokeStyle = '#3B1D0C';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-5, 14);
+            ctx.quadraticCurveTo(0, 20, 5, 14);
+            ctx.stroke();
+
+            // Whiskers
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-18, 4);
+            ctx.lineTo(-58, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-18, 10);
+            ctx.lineTo(-58, 14);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(18, 4);
+            ctx.lineTo(58, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(18, 10);
+            ctx.lineTo(58, 14);
+            ctx.stroke();
+
+            // Stripes
+            ctx.strokeStyle = '#E79A35';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(-46, -20);
+            ctx.quadraticCurveTo(-60, -10, -72, -15);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(46, -20);
+            ctx.quadraticCurveTo(60, -10, 72, -15);
+            ctx.stroke();
+
+            // Muzzle highlight
+            ctx.fillStyle = '#FFE0B3';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 26, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Front paws
+            ctx.fillStyle = '#F7A74D';
+            ctx.beginPath();
+            ctx.arc(-38, 150, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(38, 150, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#FFCC99';
+            ctx.beginPath();
+            ctx.ellipse(-38, 146, 9, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(38, 146, 9, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        let animationFrame = 0;
+
+        function animate() {
+            if (!useCanvas) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const floatOffset = Math.sin(animationFrame * 0.05) * 20;
+            const eyesOpen = Math.max(0, Math.sin(animationFrame * 0.02) * 0.5 + 0.3);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 + floatOffset;
+
+            const glow = ctx.createRadialGradient(centerX, centerY - 20, 0, centerX, centerY - 20, 180);
+            glow.addColorStop(0, 'rgba(255, 242, 210, 0.45)');
+            glow.addColorStop(1, 'rgba(255, 242, 210, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - 20, 180, 0, Math.PI * 2);
+            ctx.fill();
+
+            drawCat(centerX, centerY, 2.5, eyesOpen);
+
+            if (eyesOpen < 0.4) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.font = 'bold 60px Arial';
+                ctx.globalAlpha = 0.6 + Math.sin(animationFrame * 0.03) * 0.3;
+                ctx.fillText('Z', centerX + 200, centerY - 150);
+                ctx.fillText('z', centerX + 160, centerY - 80);
+                ctx.restore();
+            }
+
+            animationFrame++;
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            const remaining = Math.max(0, Math.ceil(videoDuration - elapsed));
+            timerDisplay.textContent = remaining + 's';
+
+            if (elapsed >= videoDuration) {
+                closeWindow();
+                return;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function closeWindow() {
+            window.electronAPI.closeWindow();
+        }
+
+        document.addEventListener('click', closeWindow);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeWindow();
+            }
+        });
+
+        setInterval(() => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const remaining = Math.max(0, Math.ceil(videoDuration - elapsed));
+            timerDisplay.textContent = remaining + 's';
+            if (elapsed >= videoDuration) {
+                closeWindow();
+            }
+        }, 100);
+
+        video.addEventListener('error', () => {
+            fallbackToCanvas();
+        });
+
+        video.addEventListener('loadedmetadata', () => {
+            console.log('Video loaded successfully');
+        });
+    </script>
+</body>
+
+</html>

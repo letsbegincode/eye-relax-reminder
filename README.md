@@ -1,20 +1,20 @@
 Here's a comprehensive **README.md** for your Eye Relax Reminder app that covers installation and usage for Windows, macOS, and Linux:
 
 ```markdown
-# 👀 Eye Relax Reminder
+# 👀 Eye Relax Reminder - v2
 
-A minimalist, cross-platform desktop app that reminds you to take eye breaks every 20 minutes (following the 20-20-20 rule). Perfect for developers, designers, and anyone who spends long hours in front of screens.
-
-![App Screenshot](screenshot.png)
+A beautiful cross-platform desktop app that reminds you to rest your eyes regularly with an animated cat character. Perfect for developers, designers, and anyone who spends long hours in front of screens.
 
 ## Features ✨
-- 🕒 20-minute reminder intervals
-- 🎵 Gentle sound notification (optional mute)
-- 🖥️ Subtle, non-intrusive popup
-- 🚀 Lightweight and energy-efficient
-- 🌈 Beautiful UI with smooth animations
-- 📌 System tray integration
-- 🔇 Toggle sound on/off
+- 🐱 **Animated Resting Cat** - A cute orange cat animation appears on a transparent full-screen overlay
+- ⚙️ **Customizable Intervals** - Set reminder frequency from 5 to 120 minutes
+- ⏱️ **Adjustable Duration** - Control how long the cat stays visible (3-30 seconds)
+- 🎯 **Non-Intrusive Design** - Transparent overlay with only the cat visible
+- 💤 **Sleeping Animation** - Floating cat with blinking eyes and "Z" bubbles
+- 🚀 **Lightweight & Efficient** - Minimal resource usage
+- 📌 **System Tray Integration** - Easy access and control from taskbar
+- 🎨 **Beautiful Gradient Background** - Purple gradient with the floating cat
+- ⏲️ **Countdown Timer** - Shows remaining time in top-right corner
 
 ## Installation 📥
 
@@ -82,25 +82,49 @@ npm run package-linux
 ```
 
 ## Usage 🛠️
-- After launching, the app runs in your system tray/menu bar
-- Click the tray icon to:
-  - **Show reminder immediately**
-  - **Quit the app**
-- The popup will automatically:
-  - Show for 20 seconds every 20 minutes
-  - Play a gentle sound (can be muted)
-  - Disappear automatically
 
-## Customization ⚙️
-Edit `config.json` (created after first run) to change:
-```json
-{
-  "reminderInterval": 20,    // Minutes between reminders
-  "breakDuration": 20,       // Seconds for each break
-  "enableSound": true,       // Toggle sound
-  "startMinimized": false    // Start hidden in tray
-}
-```
+### Running the App
+1. Start the application with `npm start`
+2. The app runs silently in your system tray
+3. Right-click the tray icon for options
+
+### Tray Menu Options
+- **Show Reminder Now** - Trigger the cat animation immediately
+- **Settings** - Open customization window
+- **Quit** - Close the application
+
+### How It Works
+- The app monitors time and displays your animated cat at configured intervals
+- The cat floats gently in the center of your screen on a transparent overlay
+- Only the cat and background are visible - your work stays visible behind it
+- The cat shows a sleeping animation with blinking eyes and "Z" bubbles
+- A countdown timer in the top-right shows remaining seconds
+- Click anywhere or press **ESC** to close the reminder early
+
+## Settings ⚙️
+
+Right-click the tray icon and select **Settings** to customize:
+
+- **Reminder Interval** (5-120 minutes)
+  - How often the cat appears to remind you to rest
+  - Default: 20 minutes
+
+- **Video Duration** (3-30 seconds)
+  - How long the cat stays visible
+  - Default: 10 seconds
+
+- **Enable Reminders**
+  - Toggle reminders on/off without closing the app
+
+Settings are saved automatically to `settings.json`
+
+## 20-20-20 Rule 👁️
+The app is designed around the eye care principle:
+- **Every 20 minutes**
+- **Look at something 20 feet away**
+- **For 20 seconds**
+
+The cute resting cat reminds you to take these important breaks!
 
 ## Building for All Platforms 🏗️
 ```bash
@@ -108,43 +132,35 @@ Edit `config.json` (created after first run) to change:
 npm install
 
 # Package for all platforms
-npm run package-all
-
-# Outputs will be in 'dist' folder:
-# - Windows: .exe installer
-# - macOS: .dmg and .app
-# - Linux: .AppImage and .deb
+npm run package-win    # Windows
+npm run package-mac    # macOS
+npm run package-linux  # Linux
 ```
 
 ## Troubleshooting 🛠
 **Problem:** App doesn't appear in system tray  
-**Solution:** Some Linux DEs require tray extensions (gnome-shell-extension-appindicator)
+**Solution:** Some Linux DEs require tray extensions
 
-**Problem:** Sound not working  
-**Solution:** Ensure your system volume is up and check mute button in app
+**Problem:** Reminder not showing  
+**Solution:** Check if reminders are enabled in Settings
 
 **Problem:** Window won't close  
-**Solution:** Right-click tray icon and select "Quit", then restart
+**Solution:** Click anywhere on screen or press ESC
 
-## Contributing 🤝
-Pull requests welcome! Please:
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push origin feature/fooBar`)
-5. Create a new Pull Request
-
-## License 📄
-MIT © abhi
+## Project Structure 📁
+```
+eye-relax-reminder/
+├── index.js                    # Main Electron process
+├── preload.js                  # IPC bridge
+├── settings.json               # Saved user settings
+├── package.json
+└── public/
+    ├── index.html              # Original reminder UI
+    ├── settings.html           # Settings window
+    ├── video-reminder.html     # Cat animation display
+    └── icon.png
 ```
 
----
+## License 📄
+MIT © Abhinav
 
-### Key Features of This README:
-1. **Platform-Specific Instructions** - Clear steps for Windows, macOS, and Linux
-2. **Multiple Installation Methods** - Both pre-built and from-source options
-3. **Visual Hierarchy** - Emojis and headers for better scanning
-4. **Troubleshooting Section** - Common issues and solutions
-5. **Build Instructions** - For developers who want to package themselves
-6. **Configuration Options** - Shows how to customize behavior
-7. **Contribution Guidelines** - Standard open-source template

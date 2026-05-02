@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Eye Relax - Settings</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top left, rgba(119, 97, 231, 0.38), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(255, 166, 181, 0.28), transparent 30%),
+                linear-gradient(135deg, #5d7ef3 0%, #a26be8 48%, #ff9bb4 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 18px;
+        }
+
+        .settings-container {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 28px;
+            box-shadow: 0 30px 80px rgba(28, 50, 102, 0.22);
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(14px);
+        }
+
+        h1 {
+            color: #2f2f43;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 32px;
+            letter-spacing: 0.6px;
+            background: linear-gradient(135deg, #7b6bf4, #ff7b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .settings-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .unit {
+            color: #999;
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .slider-value {
+            min-width: 60px;
+            text-align: right;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(118, 123, 248, 0.95), rgba(255, 123, 160, 0.9));
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, #f7d4f0 100%);
+            border: 3px solid #7b6bf4;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(123, 107, 244, 0.25);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, #f7d4f0 100%);
+            border: 3px solid #7b6bf4;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(123, 107, 244, 0.25);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(118, 123, 248, 0.26);
+            background: rgba(118, 123, 248, 0.08);
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .radio-option:hover {
+            transform: translateY(-1px);
+            background: rgba(118, 123, 248, 0.14);
+        }
+
+        .radio-option input {
+            width: 18px;
+            height: 18px;
+            accent-color: #7b6bf4;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            background: rgba(118, 123, 248, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(118, 123, 248, 0.2);
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #7b6bf4;
+        }
+
+        .checkbox-label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #484865;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #757592;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #7b6bf4 0%, #ff7b9d 100%);
+            color: white;
+            box-shadow: 0 14px 30px rgba(123, 107, 244, 0.24);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 32px rgba(123, 107, 244, 0.28);
+        }
+
+        .btn-cancel {
+            background: #ffffff;
+            color: #4b4b63;
+            border: 1px solid rgba(118, 123, 248, 0.2);
+            box-shadow: 0 10px 18px rgba(118, 123, 248, 0.12);
+        }
+
+        .btn-cancel:hover {
+            background: #f9f9ff;
+        }
+
+        .status-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="settings-container">
+        <h1>⚙️ Eye Relax Settings</h1>
+        <p class="subtitle">Set your reminder rhythm and choose the feel—gentle animation or your relaxing video.</p>
+
+        <div class="settings-group">
+            <label for="intervalSlider">Reminder Interval (minutes)</label>
+            <div class="input-group">
+                <input type="range" id="intervalSlider" min="5" max="120" step="5" value="20">
+                <div class="slider-value"><span id="intervalValue">20</span> min</div>
+            </div>
+            <div class="info-text">How often to show eye rest reminders</div>
+        </div>
+
+        <div class="settings-group">
+            <label for="durationSlider">Video Duration (seconds)</label>
+            <div class="input-group">
+                <input type="range" id="durationSlider" min="3" max="30" step="1" value="10">
+                <div class="slider-value"><span id="durationValue">10</span> sec</div>
+            </div>
+            <div class="info-text">How long the cat video stays on screen</div>
+        </div>
+
+        <div class="settings-group">
+            <label>Display Mode</label>
+            <div class="radio-group">
+                <label class="radio-option"><input type="radio" name="displayMode" value="animation"> Animation</label>
+                <label class="radio-option"><input type="radio" name="displayMode" value="video"> Video</label>
+            </div>
+            <div class="info-text">Choose between a cute animated cat or your custom video reminder.</div>
+        </div>
+
+        <div class="settings-group">
+            <div class="checkbox-group">
+                <input type="checkbox" id="enabledCheckbox" checked>
+                <label for="enabledCheckbox" class="checkbox-label">Enable reminders</label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-save" id="saveBtn">Save Settings</button>
+            <button class="btn-cancel" id="cancelBtn">Cancel</button>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+
+    <script>
+        const intervalSlider = document.getElementById('intervalSlider');
+        const durationSlider = document.getElementById('durationSlider');
+        const enabledCheckbox = document.getElementById('enabledCheckbox');
+        const displayModeRadios = document.getElementsByName('displayMode');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const intervalValue = document.getElementById('intervalValue');
+        const durationValue = document.getElementById('durationValue');
+
+        // Load settings when window opens
+        window.addEventListener('DOMContentLoaded', () => {
+            window.electronAPI.getSettings().then(settings => {
+                intervalSlider.value = settings.reminderIntervalMinutes;
+                durationSlider.value = settings.videoDurationSeconds;
+                enabledCheckbox.checked = settings.enabled;
+                const displayMode = settings.displayMode || 'animation';
+                displayModeRadios.forEach(radio => {
+                    radio.checked = radio.value === displayMode;
+                });
+                updateValues();
+            });
+        });
+
+        // Update displayed values as slider moves
+        intervalSlider.addEventListener('input', updateValues);
+        durationSlider.addEventListener('input', updateValues);
+
+        function updateValues() {
+            intervalValue.textContent = intervalSlider.value;
+            durationValue.textContent = durationSlider.value;
+        }
+
+        // Save settings
+        saveBtn.addEventListener('click', async () => {
+            const selectedMode = Array.from(displayModeRadios).find(radio => radio.checked)?.value || 'animation';
+            const newSettings = {
+                reminderIntervalMinutes: parseInt(intervalSlider.value),
+                videoDurationSeconds: parseInt(durationSlider.value),
+                enabled: enabledCheckbox.checked,
+                displayMode: selectedMode
+            };
+
+            try {
+                await window.electronAPI.saveSettings(newSettings);
+                showMessage('Settings saved successfully!', 'success');
+                setTimeout(() => {
+                    window.electronAPI.closeWindow();
+                }, 1000);
+            } catch (error) {
+                showMessage('Error saving settings: ' + error.message, 'error');
+            }
+        });
+
+        // Cancel
+        cancelBtn.addEventListener('click', () => {
+            window.electronAPI.closeWindow();
+        });
+
+        function showMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message ' + type;
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.className = 'status-message';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+
+</html>
