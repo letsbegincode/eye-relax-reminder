@@ -1,6 +1,44 @@
-node_modules
-dist
-EyeRelaxApp-win32-x64
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+release-build/
+out/
+EyeRelaxApp-win32-x64/
+
+# Packaged binaries
 *.exe
+*.dmg
+*.AppImage
+*.snap
+*.deb
+*.rpm
+*.zip
+
+# User-specific settings (use settings.default.json as template)
+settings.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Temporary files
 temp.txt
-release-build
+*.tmp
+
+# Electron
+.electron/

@@ -1,166 +1,178 @@
-Here's a comprehensive **README.md** for your Eye Relax Reminder app that covers installation and usage for Windows, macOS, and Linux:
+# 👁️ Eye Relax Reminder
 
-```markdown
-# 👀 Eye Relax Reminder - v2
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)](#installation)
+[![Electron](https://img.shields.io/badge/Electron-36-9feaf9?logo=electron&logoColor=white)](https://www.electronjs.org/)
 
-A beautiful cross-platform desktop app that reminds you to rest your eyes regularly with an animated cat character. Perfect for developers, designers, and anyone who spends long hours in front of screens.
+> A cute, cross-platform desktop app that reminds you to rest your eyes with an animated cat or a custom transparent video overlay. Based on the **20-20-20 rule** — every **20 minutes**, look at something **20 feet away** for **20 seconds**.
 
-## Features ✨
-- 🐱 **Animated Resting Cat** - A cute orange cat animation appears on a transparent full-screen overlay
-- ⚙️ **Customizable Intervals** - Set reminder frequency from 5 to 120 minutes
-- ⏱️ **Adjustable Duration** - Control how long the cat stays visible (3-30 seconds)
-- 🎯 **Non-Intrusive Design** - Transparent overlay with only the cat visible
-- 💤 **Sleeping Animation** - Floating cat with blinking eyes and "Z" bubbles
-- 🚀 **Lightweight & Efficient** - Minimal resource usage
-- 📌 **System Tray Integration** - Easy access and control from taskbar
-- 🎨 **Beautiful Gradient Background** - Purple gradient with the floating cat
-- ⏲️ **Countdown Timer** - Shows remaining time in top-right corner
+---
 
-## Installation 📥
+## ✨ Features
 
-### Windows Users 🪟
-#### Method 1: Download Pre-built Executable
-1. Download the latest `.exe` from [Releases](https://github.com/letsbegincode/eye-relax-reminder/releases)
-2. Run the installer and follow the prompts
-3. The app will launch automatically and run in your system tray
+| Feature | Description |
+|---------|-------------|
+| 🐱 **Animated Cat** | A hand-drawn, canvas-rendered sleeping cat floats on your screen |
+| 🎬 **Custom Video** | Use any WebM video with alpha transparency as your reminder |
+| 🪟 **Transparent Overlay** | The reminder appears *over* your desktop — no background, just the cat |
+| ⏱️ **Configurable** | Set interval (5–120 min) and duration (3–30 sec) |
+| 📌 **System Tray** | Runs silently in your tray — right-click for settings |
+| 🖥️ **Cross-Platform** | Works on Windows, macOS, and Linux |
+| 🔒 **Single Instance** | Prevents accidental duplicate instances |
+| ▶ **Test Button** | Preview your reminder instantly from Settings |
 
-#### Method 2: Build from Source
-```bash
-# Clone the repository
-git clone https://github.com/letsbegincode/eye-relax-reminder.git
-cd eye-relax-reminder
+---
 
-# Install dependencies
-npm install
+## 🚀 Quick Start
 
-# Package for Windows
-npm run package-win
-
-# The executable will be in the 'dist' folder
-```
-
-### macOS Users 🍎
-#### Method 1: Download DMG
-1. Download the `.dmg` from [Releases](https://github.com/letsbegincode/eye-relax-reminder/releases)
-2. Open the DMG and drag the app to your Applications folder
-3. Right-click the app and select "Open" (to bypass Gatekeeper on first run)
-
-#### Method 2: Build from Source
 ```bash
 git clone https://github.com/letsbegincode/eye-relax-reminder.git
 cd eye-relax-reminder
 npm install
-
-# Package for macOS
-npm run package-mac
-
-# The app bundle will be in 'dist'
+npm start
 ```
 
-### Linux Users 🐧
-#### Method 1: Download AppImage
-1. Download the `.AppImage` from [Releases](https://github.com/letsbegincode/eye-relax-reminder/releases)
-2. Make it executable:
-```bash
-chmod +x EyeRelaxReminder-*.AppImage
-```
-3. Run it:
-```bash
-./EyeRelaxReminder-*.AppImage
-```
+The app launches silently in your system tray. Right-click the tray icon to access **Settings** or **Show Reminder Now**.
 
-#### Method 2: Build from Source
+---
+
+## 📥 Installation
+
+### From Source (All Platforms)
+
+**Prerequisites:** [Node.js](https://nodejs.org/) 18+ and npm
+
 ```bash
 git clone https://github.com/letsbegincode/eye-relax-reminder.git
 cd eye-relax-reminder
 npm install
-
-# Package for Linux
-npm run package-linux
-
-# The executable will be in 'dist'
+npm start
 ```
 
-## Usage 🛠️
+### Build Distributable
 
-### Running the App
-1. Start the application with `npm start`
-2. The app runs silently in your system tray
-3. Right-click the tray icon for options
-
-### Tray Menu Options
-- **Show Reminder Now** - Trigger the cat animation immediately
-- **Settings** - Open customization window
-- **Quit** - Close the application
-
-### How It Works
-- The app monitors time and displays your animated cat at configured intervals
-- The cat floats gently in the center of your screen on a transparent overlay
-- Only the cat and background are visible - your work stays visible behind it
-- The cat shows a sleeping animation with blinking eyes and "Z" bubbles
-- A countdown timer in the top-right shows remaining seconds
-- Click anywhere or press **ESC** to close the reminder early
-
-## Settings ⚙️
-
-Right-click the tray icon and select **Settings** to customize:
-
-- **Reminder Interval** (5-120 minutes)
-  - How often the cat appears to remind you to rest
-  - Default: 20 minutes
-
-- **Video Duration** (3-30 seconds)
-  - How long the cat stays visible
-  - Default: 10 seconds
-
-- **Enable Reminders**
-  - Toggle reminders on/off without closing the app
-
-Settings are saved automatically to `settings.json`
-
-## 20-20-20 Rule 👁️
-The app is designed around the eye care principle:
-- **Every 20 minutes**
-- **Look at something 20 feet away**
-- **For 20 seconds**
-
-The cute resting cat reminds you to take these important breaks!
-
-## Building for All Platforms 🏗️
 ```bash
-# Install dependencies once
-npm install
+# Windows
+npm run dist:win
 
-# Package for all platforms
+# macOS
+npm run dist:mac
+
+# Linux
+npm run dist:linux
+```
+
+Output goes to the `dist/` folder.
+
+---
+
+## ⚙️ Settings
+
+Right-click the tray icon → **Settings** to customise:
+
+| Setting | Range | Default | Description |
+|---------|-------|---------|-------------|
+| Reminder Interval | 5–120 min | 20 min | How often the reminder appears |
+| Reminder Duration | 3–30 sec | 10 sec | How long it stays on screen |
+| Display Mode | Animation / Video | Animation | Canvas cat or custom video |
+| Video File | Browse… | cat.webm | Your WebM video file |
+| Enable Reminders | On / Off | On | Toggle all reminders |
+
+Settings are saved to `settings.json` (auto-created on first save).
+
+---
+
+## 🎬 Using Custom Videos
+
+For the transparent overlay effect, your video must be a **WebM with VP9 alpha channel**:
+
+1. Create your animation with a transparent background in After Effects, Blender, or similar
+2. Export as **WebM** with **VP9 codec** and **alpha channel enabled**
+3. Place the file in the `videos/` folder (or use **Browse…** in Settings)
+
+> **Tip:** MP4 does not support transparency. Only WebM (VP8A/VP9 with alpha) will render with a see-through background.
+
+### FFmpeg conversion example
+
+```bash
+ffmpeg -i input.mov -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 2M output.webm
+```
+
+---
+
+## 📁 Project Structure
+
+```
+eye-relax-reminder/
+├── index.js                  # Main Electron process
+├── preload.js                # Secure IPC bridge
+├── package.json              # App metadata & build config
+├── settings.default.json     # Default settings template
+├── LICENSE                   # MIT License
+├── CONTRIBUTING.md           # Contribution guidelines
+├── public/
+│   ├── settings.html         # Settings window UI
+│   ├── video-reminder.html   # Reminder overlay (animation + video)
+│   ├── icon.png              # App & tray icon
+│   └── relaxation-sound.mp3  # Optional audio
+└── videos/
+    └── cat.webm              # Default reminder video
+```
+
+---
+
+## 🛠️ Development
+
+```bash
+# Run with logging
+npm run dev
+
+# Package (portable)
 npm run package-win    # Windows
 npm run package-mac    # macOS
 npm run package-linux  # Linux
+
+# Build installer
+npm run dist:win
 ```
 
-## Troubleshooting 🛠
-**Problem:** App doesn't appear in system tray  
-**Solution:** Some Linux DEs require tray extensions
+---
 
-**Problem:** Reminder not showing  
-**Solution:** Check if reminders are enabled in Settings
+## 🤝 Contributing
 
-**Problem:** Window won't close  
-**Solution:** Click anywhere on screen or press ESC
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## Project Structure 📁
-```
-eye-relax-reminder/
-├── index.js                    # Main Electron process
-├── preload.js                  # IPC bridge
-├── settings.json               # Saved user settings
-├── package.json
-└── public/
-    ├── index.html              # Original reminder UI
-    ├── settings.html           # Settings window
-    ├── video-reminder.html     # Cat animation display
-    └── icon.png
-```
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push and open a Pull Request
 
-## License 📄
-MIT © Abhinav
+---
 
+## 🩺 Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| App doesn't appear | Look for the eye icon in your system tray |
+| Reminder not showing | Check if reminders are enabled in Settings |
+| Video has black background | Use a WebM with alpha channel, not MP4 |
+| Window won't close | Click anywhere or press ESC |
+| Second instance won't open | The app enforces single-instance — check your tray |
+
+---
+
+## 👁️ The 20-20-20 Rule
+
+Every **20 minutes**, look at something **20 feet** (~6 meters) away for **20 seconds**. This simple habit significantly reduces digital eye strain, dry eyes, and headaches.
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) © Abhinav
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ and Electron • Star ⭐ if this helps your eyes!</sub>
+</p>

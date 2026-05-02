@@ -1,49 +1,107 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen } = require('electron');
+/**
+ * @fileoverview Eye Relax Reminder — Main Process
+ *
+ * A cross-platform desktop app that reminds you to rest your eyes at
+ * configurable intervals. Displays either a cute canvas-drawn cat animation
+ * or a custom WebM video (with alpha transparency) as a full-screen overlay.
+ *
+ * @author Abhinav
+ * @license MIT
+ */
+
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
 
-let mainWindow = null;
+// ─── App Constants ───────────────────────────────────────────────────────────
+
+const APP_NAME = 'Eye Relax Reminder';
+const APP_VERSION = require('./package.json').version;
+
+// ─── State ───────────────────────────────────────────────────────────────────
+
+/** @type {BrowserWindow|null} */
 let settingsWindow = null;
+
+/** @type {BrowserWindow|null} */
 let videoReminderWindow = null;
+
+/** @type {Electron.Tray|null} */
 let tray = null;
+
+/** @type {NodeJS.Timeout|null} */
 let reminderInterval = null;
-let currentSettings = {
+
+/** Default settings (overwritten by settings.json if it exists) */
+const DEFAULT_SETTINGS = {
   reminderIntervalMinutes: 20,
   videoDurationSeconds: 10,
   enabled: true,
   displayMode: 'animation',
-  videoFile: 'videos/cat.webm'
+  videoFile: 'videos/cat.webm',
 };
 
-// Settings file path
-const settingsPath = path.join(__dirname, 'settings.json');
+/** @type {typeof DEFAULT_SETTINGS} */
+let currentSettings = { ...DEFAULT_SETTINGS };
 
-// Load settings from file
+// ─── Settings Persistence ────────────────────────────────────────────────────
+
+const SETTINGS_PATH = path.join(__dirname, 'settings.json');
+const DEFAULT_SETTINGS_PATH = path.join(__dirname, 'settings.default.json');
+
+/**
+ * Load user settings from disk. Falls back to defaults if the file
+ * doesn't exist or is malformed.
+ */
 function loadSettings() {
   try {
-    if (fs.existsSync(settingsPath)) {
-      const data = fs.readFileSync(settingsPath, 'utf8');
-      const loaded = JSON.parse(data);
-      currentSettings = { ...currentSettings, ...loaded };
+    let settingsFile = SETTINGS_PATH;
+
+    // If user settings don't exist, try the shipped defaults
+    if (!fs.existsSync(settingsFile)) {
+      if (fs.existsSync(DEFAULT_SETTINGS_PATH)) {
+        settingsFile = DEFAULT_SETTINGS_PATH;
+      } else {
+        console.log(`[${APP_NAME}] No settings file found — using built-in defaults`);
+        return;
+      }
     }
+
+    const data = fs.readFileSync(settingsFile, 'utf8');
+    const loaded = JSON.parse(data);
+    currentSettings = { ...DEFAULT_SETTINGS, ...loaded };
+    console.log(`[${APP_NAME}] Settings loaded from ${path.basename(settingsFile)}`);
   } catch (error) {
-    console.error('Error loading settings:', error);
+    console.error(`[${APP_NAME}] Error loading settings:`, error.message);
   }
 }
 
-// Save settings to file
+/**
+ * Persist the current settings to disk.
+ * @param {Partial<typeof DEFAULT_SETTINGS>} settings
+ * @returns {boolean} Whether the save succeeded
+ */
 function saveSettings(settings) {
   try {
     currentSettings = { ...currentSettings, ...settings };
-    fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2), 'utf8');
+    fs.writeFileSync(SETTINGS_PATH, JSON.stringify(currentSettings, null, 2), 'utf8');
+    console.log(`[${APP_NAME}] Settings saved`);
     return true;
   } catch (error) {
-    console.error('Error saving settings:', error);
+    console.error(`[${APP_NAME}] Error saving settings:`, error.message);
     return false;
   }
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Convert a relative or absolute file path to a `file://` URL the renderer
+ * can use as a `<video>` source.
+ * @param {string} filePath
+ * @returns {string}
+ */
 function resolveVideoFileUrl(filePath) {
   if (!filePath) return filePath;
   if (filePath.startsWith('file:')) return filePath;
@@ -53,7 +111,9 @@ function resolveVideoFileUrl(filePath) {
   return pathToFileURL(path.join(__dirname, filePath)).href;
 }
 
-// Handle IPC events
+// ─── IPC Handlers ────────────────────────────────────────────────────────────
+
+/** Return current settings to the renderer */
 ipcMain.handle('get-settings', () => {
   const settings = { ...currentSettings };
   if (settings.videoFile) {
@@ -62,23 +122,47 @@ ipcMain.handle('get-settings', () => {
   return settings;
 });
 
-ipcMain.handle('save-settings', (event, settings) => {
+/** Persist updated settings from the renderer */
+ipcMain.handle('save-settings', (_event, settings) => {
   const success = saveSettings(settings);
-  if (success) {
-    // Restart or start the reminder interval with updated settings
-    setupReminder();
-  }
+  if (success) setupReminder();
   return success;
 });
 
+/** Return the app version string */
+ipcMain.handle('get-app-version', () => APP_VERSION);
+
+/** Close whichever window sent this message */
 ipcMain.on('close-window', (event) => {
-  const window = BrowserWindow.fromWebContents(event.sender);
-  if (window) {
-    window.close();
-  }
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win && !win.isDestroyed()) win.close();
 });
 
-// Create settings window
+/** Trigger the reminder from the settings window ("Test" button) */
+ipcMain.on('trigger-reminder', () => {
+  createReminderWindow();
+});
+
+/** Open a native file dialog so the user can pick a video file */
+ipcMain.handle('select-video-file', async () => {
+  const result = await dialog.showOpenDialog({
+    title: 'Select Reminder Video',
+    filters: [
+      { name: 'Video Files', extensions: ['webm', 'mp4', 'mov', 'avi'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+    properties: ['openFile'],
+  });
+
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+// ─── Windows ─────────────────────────────────────────────────────────────────
+
+/**
+ * Create (or focus) the Settings window.
+ */
 function createSettingsWindow() {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.focus();
@@ -87,25 +171,25 @@ function createSettingsWindow() {
 
   settingsWindow = new BrowserWindow({
     width: 550,
-    height: 650,
+    height: 720,
     resizable: false,
     alwaysOnTop: true,
     frame: true,
     transparent: false,
+    title: `${APP_NAME} — Settings`,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
     },
-    show: false
+    show: false,
   });
 
+  settingsWindow.setMenu(null);
   settingsWindow.loadFile('public/settings.html');
 
   settingsWindow.on('ready-to-show', () => {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.show();
-    }
+    if (settingsWindow && !settingsWindow.isDestroyed()) settingsWindow.show();
   });
 
   settingsWindow.on('closed', () => {
@@ -113,20 +197,22 @@ function createSettingsWindow() {
   });
 }
 
-// Create video reminder window (full screen, transparent)
-function createVideoReminderWindow() {
+/**
+ * Create (or focus) the full-screen transparent Reminder window.
+ * Automatically closes after the configured duration.
+ */
+function createReminderWindow() {
   if (videoReminderWindow && !videoReminderWindow.isDestroyed()) {
     videoReminderWindow.focus();
     return;
   }
 
-  // Get primary display
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.bounds;
 
   videoReminderWindow = new BrowserWindow({
-    width: width,
-    height: height,
+    width,
+    height,
     x: 0,
     y: 0,
     resizable: false,
@@ -137,11 +223,11 @@ function createVideoReminderWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
     },
     show: false,
     fullscreen: true,
-    skipTaskbar: true
+    skipTaskbar: true,
   });
 
   videoReminderWindow.setMenu(null);
@@ -157,96 +243,116 @@ function createVideoReminderWindow() {
     videoReminderWindow = null;
   });
 
-  // Auto-close after configured duration
+  // Safety net: auto-close after configured duration + 2 s buffer
+  const autoCloseMs = (currentSettings.videoDurationSeconds + 2) * 1000;
   setTimeout(() => {
     if (videoReminderWindow && !videoReminderWindow.isDestroyed()) {
       videoReminderWindow.close();
     }
-  }, currentSettings.videoDurationSeconds * 1000);
+  }, autoCloseMs);
 }
 
-// Setup tray
+// ─── System Tray ─────────────────────────────────────────────────────────────
+
+/**
+ * Initialise the system-tray icon and context menu.
+ */
 function setupTray() {
   try {
     const iconPath = path.join(__dirname, 'public', 'icon.png');
     const icon = nativeImage.createFromPath(iconPath);
 
-    tray = new Tray(icon);
+    tray = new Tray(icon.resize({ width: 16, height: 16 }));
 
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Show Reminder Now',
-        click: () => createVideoReminderWindow()
+        label: '👁️  Show Reminder Now',
+        click: () => createReminderWindow(),
       },
       {
-        label: 'Settings',
-        click: () => createSettingsWindow()
+        label: '⚙️  Settings',
+        click: () => createSettingsWindow(),
       },
       { type: 'separator' },
       {
-        label: 'Quit',
+        label: `v${APP_VERSION}`,
+        enabled: false,
+      },
+      { type: 'separator' },
+      {
+        label: '❌  Quit',
         click: () => {
           if (reminderInterval) clearInterval(reminderInterval);
           app.quit();
-        }
-      }
+        },
+      },
     ]);
 
-    tray.setToolTip('Eye Relax - Rest your eyes regularly');
+    tray.setToolTip(`${APP_NAME} — Rest your eyes regularly`);
     tray.setContextMenu(contextMenu);
-
-    tray.on('click', () => createVideoReminderWindow());
-
+    tray.on('click', () => createReminderWindow());
   } catch (error) {
-    console.error('Tray initialization error:', error);
+    console.error(`[${APP_NAME}] Tray initialisation error:`, error.message);
   }
 }
 
-// Setup reminder interval
+// ─── Reminder Scheduler ─────────────────────────────────────────────────────
+
+/**
+ * (Re-)start the periodic reminder timer based on current settings.
+ */
 function setupReminder() {
   if (reminderInterval) clearInterval(reminderInterval);
 
-  // Only setup if enabled
   if (currentSettings.enabled) {
     const intervalMs = currentSettings.reminderIntervalMinutes * 60 * 1000;
-    reminderInterval = setInterval(() => {
-      createVideoReminderWindow();
-    }, intervalMs);
+    reminderInterval = setInterval(() => createReminderWindow(), intervalMs);
+    console.log(`[${APP_NAME}] Reminders enabled — every ${currentSettings.reminderIntervalMinutes} min`);
+  } else {
+    console.log(`[${APP_NAME}] Reminders disabled`);
   }
 }
 
-// Disable hardware acceleration for better transparency
+// ─── App Lifecycle ───────────────────────────────────────────────────────────
+
+// Disable hardware acceleration for transparent windows
 app.disableHardwareAcceleration();
 
-// App event handlers
+// Enforce single instance
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  console.log(`[${APP_NAME}] Another instance is already running — exiting`);
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // If user tries to open a second instance, show settings instead
+    createSettingsWindow();
+  });
+}
+
 app.whenReady().then(() => {
-  // Load settings first
   loadSettings();
-
-  // Setup tray
   setupTray();
-
-  // Show initial reminder (optional - comment out if you don't want auto-start)
-  // createVideoReminderWindow();
-
-  // Setup reminder interval
   setupReminder();
+  console.log(`[${APP_NAME}] v${APP_VERSION} started`);
 });
 
-// Prevent app from showing in dock (Mac)
+// Hide dock icon on macOS (tray-only app)
 if (process.platform === 'darwin') {
   app.dock.hide();
 }
 
+// Don't quit when all windows close — we live in the tray
 app.on('window-all-closed', () => {
-  // Don't quit when windows are closed (we have a tray icon)
+  // intentionally empty
 });
 
-// Error handling
+// ─── Global Error Handlers ───────────────────────────────────────────────────
+
 process.on('unhandledRejection', (error) => {
-  console.error('Unhandled promise rejection:', error);
+  console.error(`[${APP_NAME}] Unhandled rejection:`, error);
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error);
+  console.error(`[${APP_NAME}] Uncaught exception:`, error);
 });

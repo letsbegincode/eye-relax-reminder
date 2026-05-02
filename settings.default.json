@@ -1,0 +1,7 @@
+{
+  "reminderIntervalMinutes": 20,
+  "videoDurationSeconds": 10,
+  "enabled": true,
+  "displayMode": "animation",
+  "videoFile": "videos/cat.webm"
+}

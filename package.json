@@ -1,48 +1,87 @@
 {
-  "name": "eye-app",
-  "version": "1.0.0",
+  "name": "eye-relax-reminder",
+  "version": "2.0.0",
+  "description": "A cute, cross-platform desktop app that reminds you to rest your eyes with an animated cat or custom transparent video overlay.",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "start": "electron .",
-    "package-win": "electron-packager . eye-app --platform=win32 --arch=x64 --out=dist --icon=public/icon.png --overwrite",
-    "package-mac": "electron-packager . eye-app --platform=darwin --arch=x64 --out=dist --icon=public/icon.png --overwrite",
-    "package-linux": "electron-packager . eye-app --platform=linux --arch=x64 --out=dist --icon=public/icon.png --overwrite"
+    "dev": "electron . --enable-logging",
+    "package-win": "electron-packager . eye-relax-reminder --platform=win32 --arch=x64 --out=dist --icon=public/icon.png --overwrite --ignore=release-build",
+    "package-mac": "electron-packager . eye-relax-reminder --platform=darwin --arch=x64 --out=dist --icon=public/icon.png --overwrite --ignore=release-build",
+    "package-linux": "electron-packager . eye-relax-reminder --platform=linux --arch=x64 --out=dist --icon=public/icon.png --overwrite --ignore=release-build",
+    "dist": "electron-builder --win --mac --linux",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "description": "An eye relaxation reminder app that helps reduce eye strain",
+  "keywords": [
+    "eye-care",
+    "eye-strain",
+    "20-20-20-rule",
+    "reminder",
+    "health",
+    "break-timer",
+    "electron",
+    "desktop-app",
+    "cat",
+    "transparent-overlay"
+  ],
+  "author": "Abhinav (https://github.com/letsbegincode)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsbegincode/eye-relax-reminder.git"
+  },
+  "homepage": "https://github.com/letsbegincode/eye-relax-reminder#readme",
+  "bugs": {
+    "url": "https://github.com/letsbegincode/eye-relax-reminder/issues"
+  },
   "devDependencies": {
     "electron": "^36.2.1",
     "electron-builder": "^26.0.12",
     "electron-packager": "^17.1.2"
   },
   "build": {
-    "appId": "com.example.eyeapp",
+    "appId": "com.letsbegincode.eye-relax-reminder",
+    "productName": "Eye Relax Reminder",
     "directories": {
       "output": "dist"
     },
     "files": [
-      "**/*",
-      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-      "!**/node_modules/.bin",
-      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
-      "!.editorconfig",
-      "!**/._*",
-      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,thumbs.db,.gitignore,.gitattributes,.flowconfig,.yarn-metadata.json,.idea,appveyor.yml,.travis.yml,circle.yml,npm-debug.log,.nyc_output,yarn.lock,.yarn-integrity}"
+      "index.js",
+      "preload.js",
+      "package.json",
+      "settings.default.json",
+      "public/**/*",
+      "videos/**/*"
     ],
     "extraResources": [
       {
-        "from": "public",
-        "to": "public",
-        "filter": [
-          "*.mp3",
-          "*.wav",
-          "*.png"
-        ]
+        "from": "videos",
+        "to": "videos",
+        "filter": ["*.webm", "*.mp4"]
       }
-    ]
+    ],
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "public/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "public/icon.png",
+      "category": "public.app-category.healthcare-fitness"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "public/icon.png",
+      "category": "Utility"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }
