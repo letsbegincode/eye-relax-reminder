@@ -10,12 +10,16 @@
             box-sizing: border-box;
         }
 
+        html,
         body {
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: transparent;
+            background: transparent !important;
             font-family: Arial, sans-serif;
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,20 +34,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: transparent;
+            background: transparent !important;
+            pointer-events: none;
+        }
+
+        /* Video element — transparent background, no black bars */
+        video {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: transparent !important;
+            pointer-events: auto;
         }
 
         canvas {
             width: 100%;
             height: 100%;
             display: block;
-        }
-
-        video {
-            display: none;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+            pointer-events: auto;
         }
 
         .close-hint {
@@ -56,6 +65,8 @@
             pointer-events: none;
             animation: fadeInOut 2s infinite;
             text-align: center;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
         }
 
         .close-hint div:last-child {
@@ -70,6 +81,8 @@
             color: rgba(255, 255, 255, 0.7);
             font-size: 18px;
             font-weight: bold;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
         }
 
         @keyframes fadeInOut {
@@ -87,10 +100,9 @@
 </head>
 
 <body>
-    <div class="video-container">
+    <div class="video-container" id="videoContainer">
         <video id="catVideo" loop autoplay muted playsinline>
-            <source src="cat-rest.webm" type="video/webm">
-            <source src="cat-rest.mp4" type="video/mp4">
+            <!-- Sources will be set dynamically -->
         </video>
         <canvas id="catCanvas"></canvas>
     </div>
@@ -107,7 +119,6 @@
         const timerDisplay = document.getElementById('timer');
         let videoDuration = 10;
         let startTime = Date.now();
-        let useCanvas = true;
         let displayMode = 'animation';
 
         function resizeCanvas() {
@@ -125,10 +136,12 @@
         }
 
         function fallbackToCanvas() {
-            useCanvas = true;
             displayMode = 'animation';
             canvas.style.display = 'block';
             video.style.display = 'none';
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
             animate();
         }
 
@@ -141,26 +154,34 @@
                 displayMode = (settings && settings.displayMode) || 'animation';
 
                 if (displayMode === 'video') {
-                    useCanvas = false;
+                    // ── VIDEO MODE ──
+                    // Hide canvas completely, show video
                     canvas.style.display = 'none';
                     video.style.display = 'block';
+
                     if (settings && settings.videoFile) {
+                        // Set source directly on the video element
                         video.src = settings.videoFile;
                     }
+
                     video.load();
-                    video.play().catch(() => {
+
+                    video.play().catch((err) => {
+                        console.error('Video playback failed, falling back to animation:', err);
                         fallbackToCanvas();
                     });
+
+                    // Do NOT call animate() — no canvas animation in video mode
                     return;
                 }
             } catch (error) {
                 console.error('Failed to load reminder settings:', error);
             }
 
-            // Default animation mode path
-            useCanvas = true;
+            // ── ANIMATION MODE (default) ──
             canvas.style.display = 'block';
             video.style.display = 'none';
+            video.pause();
             animate();
         }
 
@@ -340,7 +361,8 @@
         let animationFrame = 0;
 
         function animate() {
-            if (!useCanvas) return;
+            // Only run animation in animation mode
+            if (displayMode !== 'animation') return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -384,6 +406,8 @@
         }
 
         function closeWindow() {
+            // Clean up video before closing
+            video.pause();
             window.electronAPI.closeWindow();
         }
 
@@ -394,6 +418,7 @@
             }
         });
 
+        // Timer countdown (works for both modes)
         setInterval(() => {
             const elapsed = (Date.now() - startTime) / 1000;
             const remaining = Math.max(0, Math.ceil(videoDuration - elapsed));
@@ -403,12 +428,14 @@
             }
         }, 100);
 
+        // Video error handler — fall back to canvas animation
         video.addEventListener('error', () => {
+            console.error('Video error, falling back to animation');
             fallbackToCanvas();
         });
 
         video.addEventListener('loadedmetadata', () => {
-            console.log('Video loaded successfully');
+            console.log('Video loaded successfully, dimensions:', video.videoWidth, 'x', video.videoHeight);
         });
     </script>
 </body>

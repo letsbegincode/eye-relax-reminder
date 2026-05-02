@@ -13,7 +13,7 @@ let currentSettings = {
   videoDurationSeconds: 10,
   enabled: true,
   displayMode: 'animation',
-  videoFile: '../videos/Firefly A realistic chubby brown furry cat enters from the left side of the frame. _The cat walks sl.mp4'
+  videoFile: 'videos/cat.webm'
 };
 
 // Settings file path
