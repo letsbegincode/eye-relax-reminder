@@ -7,13 +7,14 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --enable-logging",
-    "package-win": "electron-packager . eye-relax-reminder --platform=win32 --arch=x64 --out=dist --icon=public/icon.png --overwrite --ignore=release-build",
-    "package-mac": "electron-packager . eye-relax-reminder --platform=darwin --arch=x64 --out=dist --icon=public/icon.png --overwrite --ignore=release-build",
-    "package-linux": "electron-packager . eye-relax-reminder --platform=linux --arch=x64 --out=dist --icon=public/icon.png --overwrite --ignore=release-build",
-    "dist": "electron-builder --win --mac --linux",
-    "dist:win": "electron-builder --win",
+    "clean": "npx rimraf dist",
+    "clean:win": "npx rimraf dist && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
+    "clean:mac": "npx rimraf dist && electron-builder --mac",
+    "dist:win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
     "dist:mac": "electron-builder --mac",
-    "dist:linux": "electron-builder --linux"
+    "dist:linux": "electron-builder --linux",
+    "dist:all": "electron-builder --win --mac --linux",
+    "compress-videos": "node scripts/compress-videos.js"
   },
   "keywords": [
     "eye-care",
@@ -38,6 +39,8 @@
     "url": "https://github.com/letsbegincode/eye-relax-reminder/issues"
   },
   "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "cross-env": "^10.1.0",
     "electron": "^36.2.1",
     "electron-builder": "^26.0.12",
     "electron-packager": "^17.1.2"
@@ -45,8 +48,11 @@
   "build": {
     "appId": "com.letsbegincode.eye-relax-reminder",
     "productName": "Eye Relax Reminder",
+    "asar": true,
+    "asarUnpack": [],
     "directories": {
-      "output": "dist"
+      "output": "dist",
+      "buildResources": "public"
     },
     "files": [
       "index.js",
@@ -54,34 +60,64 @@
       "package.json",
       "settings.default.json",
       "public/**/*",
-      "videos/**/*"
+      "!public/icon.png",
+      "!videos/**",
+      "!node_modules/**",
+      "!dist/**",
+      "!release-build/**",
+      "!scripts/**",
+      "!*.md",
+      "!*.txt",
+      "!.git/**",
+      "!.editorconfig",
+      "!.gitignore"
     ],
     "extraResources": [
       {
         "from": "videos",
         "to": "videos",
-        "filter": ["*.webm", "*.mp4"]
+        "filter": [
+          "*.webm",
+          "*.mp4"
+        ]
       }
     ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ],
       "icon": "public/icon.png"
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
       "icon": "public/icon.png",
-      "category": "public.app-category.healthcare-fitness"
+      "category": "public.app-category.healthcare-fitness",
+      "darkModeSupport": true
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage"
+      ],
       "icon": "public/icon.png",
       "category": "Utility"
     },
     "nsis": {
-      "oneClick": true,
-      "allowToChangeInstallationDirectory": false,
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    }
+    },
+    "compression": "maximum"
   }
 }
