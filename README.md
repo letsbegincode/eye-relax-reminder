@@ -26,7 +26,7 @@
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/letsbegincode/eye-relax-reminder.git
+git clone https://github.com/letsbegincode/eye-relax-remainder.git
 cd eye-relax-reminder
 npm install
 npm start
@@ -38,31 +38,32 @@ The app launches silently in your system tray. Right-click the tray icon to acce
 
 ## 📥 Installation
 
-### From Source (All Platforms)
+### 1. Download the Portable App (Easiest)
+You do not need to install anything! Just download the pre-packaged portable version:
+
+1. Go to the [Releases page](https://github.com/letsbegincode/eye-relax-remainder/releases).
+2. Download the `Eye-Relax-Reminder-vX.X.X-Windows.zip` file.
+3. **Extract the ZIP file** to a permanent location on your PC (e.g., your Documents folder).
+4. Inside the extracted folder, double-click **`Eye Relax Reminder.exe`** to run it.
+
+> ⚠️ **IMPORTANT:** Do **not** drag the `.exe` file out of the folder to your Desktop! It needs the surrounding `.dll` and `.dat` files to work. If you want it on your Desktop, right-click the `.exe` and select **"Create Shortcut"**, then move the shortcut to your Desktop.
+
+### 2. From Source (Developers)
 
 **Prerequisites:** [Node.js](https://nodejs.org/) 18+ and npm
 
 ```bash
-git clone https://github.com/letsbegincode/eye-relax-reminder.git
+git clone https://github.com/letsbegincode/eye-relax-remainder.git
 cd eye-relax-reminder
 npm install
 npm start
 ```
 
-### Build Distributable
-
+#### Build your own Portable App
 ```bash
-# Windows
-npm run dist:win
-
-# macOS
-npm run dist:mac
-
-# Linux
-npm run dist:linux
+npm run package-win
 ```
-
-Output goes to the `dist/` folder.
+Output will be generated in `dist/eye-relax-reminder-win32-x64/`.
 
 ---
 
