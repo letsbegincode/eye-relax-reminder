@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /** Open a native file-picker for video files; returns path or null */
   selectVideoFile: () => ipcRenderer.invoke('select-video-file'),
 
+  /** Get list of bundled videos */
+  getBundledVideos: () => ipcRenderer.invoke('get-bundled-videos'),
+
   // ── Reminder ───────────────────────────────────────────────────────────
   /** Trigger a reminder immediately (used by the "Test" button) */
   triggerReminder: () => ipcRenderer.send('trigger-reminder'),
@@ -30,4 +33,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ── App Info ───────────────────────────────────────────────────────────
   /** Get the current app version string */
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+
+  /** Temp: log error to terminal */
+  logError: (msg) => ipcRenderer.send('log-error', msg),
 });

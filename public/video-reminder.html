@@ -39,7 +39,22 @@ async function init(){
     const s=await window.electronAPI.getSettings();
     if(s&&typeof s.videoDurationSeconds==='number')setTimer(s.videoDurationSeconds);
     mode=(s&&s.displayMode)||'animation';
-    if(mode==='video'){cvs.style.display='none';vid.style.display='block';msgEl.style.display='none';if(s&&s.videoFile)vid.src=s.videoFile;vid.load();vid.play().catch(()=>fallback());return}
+    if(mode==='video'){
+      cvs.style.display='none';
+      vid.style.display='block';
+      msgEl.style.display='none';
+      if(s&&s.videoFile) {
+        console.log("Loading video:", s.videoFile);
+        vid.src=s.videoFile;
+      }
+      vid.load();
+      vid.play().catch((e)=>{
+        console.error("Video play failed:", e);
+        if (window.electronAPI.logError) window.electronAPI.logError(e.message || String(e));
+        fallback();
+      });
+      return;
+    }
   }catch(e){console.error(e)}
   cvs.style.display='block';vid.style.display='none';vid.pause();msgEl.style.display='block';animate();
 }
@@ -264,7 +279,11 @@ function close(){vid.pause();window.electronAPI.closeWindow()}
 document.addEventListener('click',close);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 setInterval(()=>{const el=(Date.now()-t0)/1000,rem=Math.max(0,Math.ceil(dur-el));tmr.textContent=rem+'s';pf.style.width=(rem/dur*100)+'%';if(el>=dur)close()},100);
-vid.addEventListener('error',()=>fallback());
+vid.addEventListener('error',(e)=>{
+  console.error("Video element error:", vid.error);
+  if (window.electronAPI.logError) window.electronAPI.logError("Video element error: " + (vid.error ? vid.error.message || vid.error.code : 'unknown'));
+  fallback();
+});
 vid.addEventListener('loadedmetadata',()=>console.log('Video loaded:',vid.videoWidth,'x',vid.videoHeight));
 </script>
 </body>

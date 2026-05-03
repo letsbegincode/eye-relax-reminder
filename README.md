@@ -13,17 +13,16 @@
 | Feature | Description |
 |---------|-------------|
 | 🐱 **Animated Cat** | A hand-drawn, canvas-rendered sleeping cat floats on your screen |
-| 🎬 **Custom Video** | Use any WebM video with alpha transparency as your reminder |
-| 🪟 **Transparent Overlay** | The reminder appears *over* your desktop — no background, just the cat |
+| 🎬 **Custom Video** | Bundled transparent animations or browse for any custom WebM |
+| 🪟 **Transparent Overlay** | The reminder appears *over* your desktop with full alpha-channel support |
 | ⏱️ **Configurable** | Set interval (5–120 min) and duration (3–30 sec) |
 | 📌 **System Tray** | Runs silently in your tray — right-click for settings |
-| 🖥️ **Cross-Platform** | Works on Windows, macOS, and Linux |
+| 🖥️ **Cross-Platform** | Generates standalone ZIPs for Windows and DMGs for macOS |
 | 🔒 **Single Instance** | Prevents accidental duplicate instances |
-| ▶ **Test Button** | Preview your reminder instantly from Settings |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Testing)
 
 ```bash
 git clone https://github.com/letsbegincode/eye-relax-remainder.git
@@ -36,37 +35,6 @@ The app launches silently in your system tray. Right-click the tray icon to acce
 
 ---
 
-## 📥 Installation
-
-### 1. Download the Portable App (Easiest)
-You do not need to install anything! Just download the pre-packaged portable version:
-
-1. Go to the [Releases page](https://github.com/letsbegincode/eye-relax-remainder/releases).
-2. Download the `Eye-Relax-Reminder-vX.X.X-Windows.zip` file.
-3. **Extract the ZIP file** to a permanent location on your PC (e.g., your Documents folder).
-4. Inside the extracted folder, double-click **`Eye Relax Reminder.exe`** to run it.
-
-> ⚠️ **IMPORTANT:** Do **not** drag the `.exe` file out of the folder to your Desktop! It needs the surrounding `.dll` and `.dat` files to work. If you want it on your Desktop, right-click the `.exe` and select **"Create Shortcut"**, then move the shortcut to your Desktop.
-
-### 2. From Source (Developers)
-
-**Prerequisites:** [Node.js](https://nodejs.org/) 18+ and npm
-
-```bash
-git clone https://github.com/letsbegincode/eye-relax-remainder.git
-cd eye-relax-reminder
-npm install
-npm start
-```
-
-#### Build your own Portable App
-```bash
-npm run package-win
-```
-Output will be generated in `dist/eye-relax-reminder-win32-x64/`.
-
----
-
 ## ⚙️ Settings
 
 Right-click the tray icon → **Settings** to customise:
@@ -75,29 +43,28 @@ Right-click the tray icon → **Settings** to customise:
 |---------|-------|---------|-------------|
 | Reminder Interval | 5–120 min | 20 min | How often the reminder appears |
 | Reminder Duration | 3–30 sec | 10 sec | How long it stays on screen |
-| Display Mode | Animation / Video | Animation | Canvas cat or custom video |
-| Video File | Browse… | cat.webm | Your WebM video file |
+| Display Mode | Animation / Video | Animation | Canvas cat or WebM video |
+| Video File | Dropdown | Bundled | Select a bundled video or browse your PC |
 | Enable Reminders | On / Off | On | Toggle all reminders |
 
-Settings are saved to `settings.json` (auto-created on first save).
+> **Note:** User settings are safely persisted across updates in your OS's native app data folder (`%APPDATA%/eye-relax-reminder/settings.json` on Windows, `~/Library/Application Support/eye-relax-reminder/settings.json` on macOS).
 
 ---
 
 ## 🎬 Using Custom Videos
 
-For the transparent overlay effect, your video must be a **WebM with VP9 alpha channel**:
+For the transparent overlay effect, your video must be a **WebM with VP9 alpha channel**. 
 
-1. Create your animation with a transparent background in After Effects, Blender, or similar
-2. Export as **WebM** with **VP9 codec** and **alpha channel enabled**
-3. Place the file in the `videos/` folder (or use **Browse…** in Settings)
+### Bundled Videos
+Any `.webm` or `.mp4` file placed inside the `videos/` folder will **automatically appear in the Settings dropdown menu** when the app is built.
 
-> **Tip:** MP4 does not support transparency. Only WebM (VP8A/VP9 with alpha) will render with a see-through background.
-
-### FFmpeg conversion example
+### Built-in Compression Tool
+To ensure the app remains small, we included a built-in cross-platform video compressor. It drastically shrinks video file size while perfectly preserving the Alpha Transparency.
 
 ```bash
-ffmpeg -i input.mov -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 2M output.webm
+npm run compress-videos
 ```
+This automatically backs up originals to `videos/_originals` and replaces the active files with highly optimized, alpha-preserved WebM versions.
 
 ---
 
@@ -107,34 +74,36 @@ ffmpeg -i input.mov -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 2M output.webm
 eye-relax-reminder/
 ├── index.js                  # Main Electron process
 ├── preload.js                # Secure IPC bridge
-├── package.json              # App metadata & build config
+├── package.json              # App metadata & electron-builder config
 ├── settings.default.json     # Default settings template
-├── LICENSE                   # MIT License
-├── CONTRIBUTING.md           # Contribution guidelines
 ├── public/
 │   ├── settings.html         # Settings window UI
-│   ├── video-reminder.html   # Reminder overlay (animation + video)
-│   ├── icon.png              # App & tray icon
-│   └── relaxation-sound.mp3  # Optional audio
+│   ├── video-reminder.html   # Reminder overlay
+│   └── icon.png              # App & tray icon
+├── scripts/
+│   └── compress-videos.js    # Built-in ffmpeg video compressor
 └── videos/
-    └── cat.webm              # Default reminder video
+    └── ...                   # Drop bundled videos here
 ```
 
 ---
 
-## 🛠️ Development
+## 🛠️ Building Releases (electron-builder)
 
+This project uses `electron-builder` to generate clean, production-ready distributions.
+
+### Local Testing Before Release
+To quickly test the exact packaged output without waiting for full ZIP/DMG compression:
 ```bash
-# Run with logging
-npm run dev
+npm run test:win    # Windows (Launches unpacked .exe instantly)
+npm run test:mac    # macOS (Launches unpacked .app instantly)
+```
 
-# Package (portable)
-npm run package-win    # Windows
-npm run package-mac    # macOS
-npm run package-linux  # Linux
-
-# Build installer
-npm run dist:win
+### Build Final Installers
+To build the final distributions for GitHub Releases (Outputs to `dist/`):
+```bash
+npm run clean:win   # Generates Windows ZIP (Portable)
+npm run clean:mac   # Generates macOS DMG
 ```
 
 ---
@@ -155,10 +124,9 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 | Problem | Solution |
 |---------|----------|
 | App doesn't appear | Look for the eye icon in your system tray |
-| Reminder not showing | Check if reminders are enabled in Settings |
-| Video has black background | Use a WebM with alpha channel, not MP4 |
+| Video has black background | Ensure hardware acceleration is not forced off by your OS. Only WebM files support alpha. |
 | Window won't close | Click anywhere or press ESC |
-| Second instance won't open | The app enforces single-instance — check your tray |
+| Symlink Error (Windows) | If `electron-builder` fails to download `winCodeSign`, extract it manually with 7-Zip using the `-snl` flag. |
 
 ---
 
@@ -171,8 +139,6 @@ Every **20 minutes**, look at something **20 feet** (~6 meters) away for **20 se
 ## 📄 License
 
 [MIT](LICENSE) © Abhinav
-
----
 
 <p align="center">
   <sub>Built with ❤️ and Electron • Star ⭐ if this helps your eyes!</sub>

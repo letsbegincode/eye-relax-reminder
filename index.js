@@ -47,8 +47,11 @@ let currentSettings = { ...DEFAULT_SETTINGS };
 
 // ─── Settings Persistence ────────────────────────────────────────────────────
 
-const SETTINGS_PATH = path.join(__dirname, 'settings.json');
 const DEFAULT_SETTINGS_PATH = path.join(__dirname, 'settings.default.json');
+
+function getSettingsPath() {
+  return path.join(app.getPath('userData'), 'settings.json');
+}
 
 /**
  * Load user settings from disk. Falls back to defaults if the file
@@ -56,12 +59,16 @@ const DEFAULT_SETTINGS_PATH = path.join(__dirname, 'settings.default.json');
  */
 function loadSettings() {
   try {
-    let settingsFile = SETTINGS_PATH;
+    const settingsFile = getSettingsPath();
 
     // If user settings don't exist, try the shipped defaults
     if (!fs.existsSync(settingsFile)) {
       if (fs.existsSync(DEFAULT_SETTINGS_PATH)) {
-        settingsFile = DEFAULT_SETTINGS_PATH;
+        const data = fs.readFileSync(DEFAULT_SETTINGS_PATH, 'utf8');
+        const loaded = JSON.parse(data);
+        currentSettings = { ...DEFAULT_SETTINGS, ...loaded };
+        console.log(`[${APP_NAME}] Settings loaded from built-in defaults`);
+        return;
       } else {
         console.log(`[${APP_NAME}] No settings file found — using built-in defaults`);
         return;
@@ -71,7 +78,7 @@ function loadSettings() {
     const data = fs.readFileSync(settingsFile, 'utf8');
     const loaded = JSON.parse(data);
     currentSettings = { ...DEFAULT_SETTINGS, ...loaded };
-    console.log(`[${APP_NAME}] Settings loaded from ${path.basename(settingsFile)}`);
+    console.log(`[${APP_NAME}] Settings loaded from ${settingsFile}`);
   } catch (error) {
     console.error(`[${APP_NAME}] Error loading settings:`, error.message);
   }
@@ -85,7 +92,7 @@ function loadSettings() {
 function saveSettings(settings) {
   try {
     currentSettings = { ...currentSettings, ...settings };
-    fs.writeFileSync(SETTINGS_PATH, JSON.stringify(currentSettings, null, 2), 'utf8');
+    fs.writeFileSync(getSettingsPath(), JSON.stringify(currentSettings, null, 2), 'utf8');
     console.log(`[${APP_NAME}] Settings saved`);
     return true;
   } catch (error) {
@@ -106,8 +113,28 @@ function resolveVideoFileUrl(filePath) {
   if (!filePath) return filePath;
   if (filePath.startsWith('file:')) return filePath;
   if (path.isAbsolute(filePath)) {
+    console.log(`[VIDEO URL] Absolute path resolved:`, pathToFileURL(filePath).href);
     return pathToFileURL(filePath).href;
   }
+  
+  // Try standard dev path first
+  let targetPath = path.join(__dirname, filePath);
+  if (fs.existsSync(targetPath)) {
+    console.log(`[VIDEO URL] Dev path resolved:`, pathToFileURL(targetPath).href);
+    return pathToFileURL(targetPath).href;
+  }
+
+  // If running in packaged app, videos are in extraResources (process.resourcesPath)
+  if (app.isPackaged) {
+    targetPath = path.join(process.resourcesPath, filePath);
+    if (fs.existsSync(targetPath)) {
+      console.log(`[VIDEO URL] Packaged path resolved:`, pathToFileURL(targetPath).href);
+      return pathToFileURL(targetPath).href;
+    }
+  }
+
+  console.log(`[VIDEO URL] Fallback to:`, pathToFileURL(path.join(__dirname, filePath)).href);
+  // Fallback
   return pathToFileURL(path.join(__dirname, filePath)).href;
 }
 
@@ -131,6 +158,19 @@ ipcMain.handle('save-settings', (_event, settings) => {
 
 /** Return the app version string */
 ipcMain.handle('get-app-version', () => APP_VERSION);
+
+ipcMain.on('log-error', (event, msg) => {
+  console.log(`[RENDERER ERROR] ${msg}`);
+});
+
+/** Return the list of bundled videos available in the videos/ folder */
+ipcMain.handle('get-bundled-videos', () => {
+  const videosDir = app.isPackaged ? path.join(process.resourcesPath, 'videos') : path.join(__dirname, 'videos');
+  if (!fs.existsSync(videosDir)) return [];
+  return fs.readdirSync(videosDir)
+    .filter(f => f.endsWith('.webm') || f.endsWith('.mp4'))
+    .map(f => `videos/${f}`);
+});
 
 /** Close whichever window sent this message */
 ipcMain.on('close-window', (event) => {
@@ -219,6 +259,7 @@ function createReminderWindow() {
     alwaysOnTop: true,
     frame: false,
     transparent: true,
+    hasShadow: false,
     backgroundColor: '#00000000',
     webPreferences: {
       nodeIntegration: false,
@@ -315,7 +356,7 @@ function setupReminder() {
 
 // ─── App Lifecycle ───────────────────────────────────────────────────────────
 
-// Disable hardware acceleration for transparent windows
+// Disable hardware acceleration to ensure the transparent window works on Windows
 app.disableHardwareAcceleration();
 
 // Enforce single instance

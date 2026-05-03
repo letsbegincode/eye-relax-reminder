@@ -85,10 +85,10 @@
     <div class="grp" id="vpg" style="display:none">
       <label>Video File</label>
       <div class="vp">
-        <div class="vfn" id="vfn">cat.webm (default)</div>
-        <button type="button" class="bbr" id="browseBtn">Browse…</button>
+        <select id="videoSelect" class="vfn" style="appearance: auto; cursor: pointer;"></select>
+        <button type="button" class="bbr" id="browseBtn">Browse Custom…</button>
       </div>
-      <div class="info">Use a WebM with alpha channel for transparent background</div>
+      <div class="info">Choose a bundled video or browse for a custom WebM with alpha channel</div>
     </div>
 
     <div class="grp">
@@ -122,18 +122,39 @@
       iv: document.getElementById('intervalValue'),
       dv: document.getElementById('durationValue'),
       vpg: document.getElementById('vpg'),
-      vfn: document.getElementById('vfn'),
+      videoSelect: document.getElementById('videoSelect'),
       ft: document.getElementById('ft'),
     };
-    let customVideoPath = null;
 
     window.addEventListener('DOMContentLoaded', async () => {
+      // Load available bundled videos into the dropdown
+      const videos = await window.electronAPI.getBundledVideos();
+      videos.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v.split('/').pop() + ' (bundled)';
+        els.videoSelect.appendChild(opt);
+      });
+
       const s = await window.electronAPI.getSettings();
       els.interval.value = s.reminderIntervalMinutes;
       els.duration.value = s.videoDurationSeconds;
       els.enabled.checked = s.enabled;
       els.radios.forEach(r => r.checked = r.value === (s.displayMode || 'animation'));
-      if (s.videoFile) els.vfn.textContent = decodeURIComponent(s.videoFile.split('/').pop());
+      
+      if (s.videoFile) {
+        const isBundled = Array.from(els.videoSelect.options).some(o => o.value === s.videoFile);
+        if (isBundled) {
+          els.videoSelect.value = s.videoFile;
+        } else {
+          // Custom video
+          const opt = document.createElement('option');
+          opt.value = s.videoFile;
+          opt.textContent = decodeURIComponent(s.videoFile.split(/[\\/]/).pop()) + ' (custom)';
+          els.videoSelect.appendChild(opt);
+          els.videoSelect.value = s.videoFile;
+        }
+      }
       syncUI();
       try { const v = await window.electronAPI.getAppVersion(); els.ft.textContent = `Eye Relax Reminder  v${v}`; } catch(e){}
     });
@@ -154,29 +175,42 @@
 
     els.browse.addEventListener('click', async () => {
       const fp = await window.electronAPI.selectVideoFile();
-      if (fp) { customVideoPath = fp; els.vfn.textContent = fp.split(/[\\/]/).pop(); }
+      if (fp) { 
+        // Remove existing custom if any
+        Array.from(els.videoSelect.options).forEach(o => {
+          if(o.textContent.includes('(custom)')) o.remove();
+        });
+        const opt = document.createElement('option');
+        opt.value = fp;
+        opt.textContent = fp.split(/[\\/]/).pop() + ' (custom)';
+        els.videoSelect.appendChild(opt);
+        els.videoSelect.value = fp;
+      }
     });
 
     els.save.addEventListener('click', async () => {
+      await saveCurrentSettings();
+      msg('Settings saved!', 'success');
+      setTimeout(() => window.electronAPI.closeWindow(), 800);
+    });
+
+    els.test.addEventListener('click', async () => {
+      await saveCurrentSettings();
+      window.electronAPI.triggerReminder();
+      msg('Reminder triggered!', 'success');
+    });
+
+    async function saveCurrentSettings() {
       const mode = Array.from(els.radios).find(r => r.checked)?.value || 'animation';
       const ns = {
         reminderIntervalMinutes: parseInt(els.interval.value),
         videoDurationSeconds: parseInt(els.duration.value),
         enabled: els.enabled.checked,
         displayMode: mode,
+        videoFile: els.videoSelect.value
       };
-      if (customVideoPath) ns.videoFile = customVideoPath;
-      try {
-        await window.electronAPI.saveSettings(ns);
-        msg('Settings saved!', 'success');
-        setTimeout(() => window.electronAPI.closeWindow(), 800);
-      } catch (e) { msg('Error: ' + e.message, 'error'); }
-    });
-
-    els.test.addEventListener('click', () => {
-      window.electronAPI.triggerReminder();
-      msg('Reminder triggered!', 'success');
-    });
+      await window.electronAPI.saveSettings(ns);
+    }
 
     els.cancel.addEventListener('click', () => window.electronAPI.closeWindow());
 
