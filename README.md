@@ -10,7 +10,9 @@
 
 ## 📹 Demo
 
-![Eye Relax Reminder Demo](public/demo-git.gif)
+<p align="center">
+  <img src="./public/demo-git.gif" alt="Eye Relax Reminder Demo" width="800">
+</p>
 
 ---
 
