@@ -3,7 +3,7 @@
  *
  * A cross-platform desktop app that reminds you to rest your eyes at
  * configurable intervals. Displays either a cute canvas-drawn cat animation
- * or a custom WebM video (with alpha transparency) as a full-screen overlay.
+ * or a WebM video overlay as a full-screen transparent window.
  *
  * @author Abhinav
  * @license MIT
@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS = {
   videoDurationSeconds: 10,
   enabled: true,
   displayMode: 'animation',
-  videoFile: 'videos/cat.webm',
+  videoFile: '',
 };
 
 /** @type {typeof DEFAULT_SETTINGS} */
@@ -113,28 +113,23 @@ function resolveVideoFileUrl(filePath) {
   if (!filePath) return filePath;
   if (filePath.startsWith('file:')) return filePath;
   if (path.isAbsolute(filePath)) {
-    console.log(`[VIDEO URL] Absolute path resolved:`, pathToFileURL(filePath).href);
     return pathToFileURL(filePath).href;
   }
-  
-  // Try standard dev path first
+
+  // Try standard dev path first (relative to app root)
   let targetPath = path.join(__dirname, filePath);
   if (fs.existsSync(targetPath)) {
-    console.log(`[VIDEO URL] Dev path resolved:`, pathToFileURL(targetPath).href);
     return pathToFileURL(targetPath).href;
   }
 
-  // If running in packaged app, videos are in extraResources (process.resourcesPath)
+  // In a packaged app, extraResources land in process.resourcesPath
   if (app.isPackaged) {
     targetPath = path.join(process.resourcesPath, filePath);
     if (fs.existsSync(targetPath)) {
-      console.log(`[VIDEO URL] Packaged path resolved:`, pathToFileURL(targetPath).href);
       return pathToFileURL(targetPath).href;
     }
   }
 
-  console.log(`[VIDEO URL] Fallback to:`, pathToFileURL(path.join(__dirname, filePath)).href);
-  // Fallback
   return pathToFileURL(path.join(__dirname, filePath)).href;
 }
 
@@ -158,10 +153,6 @@ ipcMain.handle('save-settings', (_event, settings) => {
 
 /** Return the app version string */
 ipcMain.handle('get-app-version', () => APP_VERSION);
-
-ipcMain.on('log-error', (event, msg) => {
-  console.log(`[RENDERER ERROR] ${msg}`);
-});
 
 /** Return the list of bundled videos available in the videos/ folder */
 ipcMain.handle('get-bundled-videos', () => {
@@ -375,13 +366,10 @@ app.whenReady().then(() => {
   loadSettings();
   setupTray();
   setupReminder();
+  // Hide dock icon on macOS (tray-only app)
+  if (process.platform === 'darwin') app.dock.hide();
   console.log(`[${APP_NAME}] v${APP_VERSION} started`);
 });
-
-// Hide dock icon on macOS (tray-only app)
-if (process.platform === 'darwin') {
-  app.dock.hide();
-}
 
 // Don't quit when all windows close — we live in the tray
 app.on('window-all-closed', () => {

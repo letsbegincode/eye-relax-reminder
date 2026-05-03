@@ -15,8 +15,7 @@
     "dist:linux": "electron-builder --linux",
     "dist:all": "electron-builder --win --mac --linux",
     "test:win": "npx rimraf dist && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --dir && \"dist/win-unpacked/Eye Relax Reminder.exe\"",
-    "test:mac": "npx rimraf dist && electron-builder --mac --dir && open \"dist/mac/Eye Relax Reminder.app\"",
-    "compress-videos": "node scripts/compress-videos.js"
+    "test:mac": "npx rimraf dist && electron-builder --mac --dir && open \"dist/mac/Eye Relax Reminder.app\""
   },
   "keywords": [
     "eye-care",
@@ -41,11 +40,9 @@
     "url": "https://github.com/letsbegincode/eye-relax-reminder/issues"
   },
   "devDependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "cross-env": "^10.1.0",
     "electron": "^36.2.1",
-    "electron-builder": "^26.0.12",
-    "electron-packager": "^17.1.2"
+    "electron-builder": "^26.0.12"
   },
   "build": {
     "appId": "com.letsbegincode.eye-relax-reminder",
@@ -87,7 +84,9 @@
       "target": [
         {
           "target": "zip",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/icon.png"

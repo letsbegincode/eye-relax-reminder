@@ -33,7 +33,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ── App Info ───────────────────────────────────────────────────────────
   /** Get the current app version string */
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-
-  /** Temp: log error to terminal */
-  logError: (msg) => ipcRenderer.send('log-error', msg),
 });

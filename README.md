@@ -58,13 +58,6 @@ For the transparent overlay effect, your video must be a **WebM with VP9 alpha c
 ### Bundled Videos
 Any `.webm` or `.mp4` file placed inside the `videos/` folder will **automatically appear in the Settings dropdown menu** when the app is built.
 
-### Built-in Compression Tool
-To ensure the app remains small, we included a built-in cross-platform video compressor. It drastically shrinks video file size while perfectly preserving the Alpha Transparency.
-
-```bash
-npm run compress-videos
-```
-This automatically backs up originals to `videos/_originals` and replaces the active files with highly optimized, alpha-preserved WebM versions.
 
 ---
 
@@ -80,8 +73,6 @@ eye-relax-reminder/
 │   ├── settings.html         # Settings window UI
 │   ├── video-reminder.html   # Reminder overlay
 │   └── icon.png              # App & tray icon
-├── scripts/
-│   └── compress-videos.js    # Built-in ffmpeg video compressor
 └── videos/
     └── ...                   # Drop bundled videos here
 ```
