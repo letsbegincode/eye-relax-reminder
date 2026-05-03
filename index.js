@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen, dialog } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen, dialog, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -258,12 +258,23 @@ function createReminderWindow() {
       preload: path.join(__dirname, 'preload.js'),
     },
     show: false,
-    fullscreen: true,
     skipTaskbar: true,
   });
 
+  videoReminderWindow.setAlwaysOnTop(true, 'screen-saver');
+
+  // Pass all mouse events through to the background applications
+  videoReminderWindow.setIgnoreMouseEvents(true, { forward: true });
+
   videoReminderWindow.setMenu(null);
   videoReminderWindow.loadFile('public/video-reminder.html');
+
+  // Register Global Escape key
+  globalShortcut.register('Escape', () => {
+    if (videoReminderWindow && !videoReminderWindow.isDestroyed()) {
+      videoReminderWindow.close();
+    }
+  });
 
   videoReminderWindow.on('ready-to-show', () => {
     if (videoReminderWindow && !videoReminderWindow.isDestroyed()) {
@@ -273,6 +284,7 @@ function createReminderWindow() {
 
   videoReminderWindow.on('closed', () => {
     videoReminderWindow = null;
+    globalShortcut.unregister('Escape');
   });
 
   // Safety net: auto-close after configured duration + 2 s buffer
