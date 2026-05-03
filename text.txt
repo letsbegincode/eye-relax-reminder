@@ -1,6 +1,0 @@
-git add .
-git commit -m "fix: restore GH_TOKEN for native electron-builder publishing"
-git push origin main
-
-git tag v2.0.5
-git push origin v2.0.5

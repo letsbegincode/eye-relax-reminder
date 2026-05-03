@@ -8,6 +8,13 @@
 
 ---
 
+## 📹 Demo
+
+![Eye Relax Reminder Demo](public/demo-git.gif)
+
+---
+
+
 ## ✨ Features
 
 | Feature | Description |
