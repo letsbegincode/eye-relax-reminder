@@ -25,7 +25,7 @@
 ## 🚀 Quick Start (Local Testing)
 
 ```bash
-git clone https://github.com/letsbegincode/eye-relax-remainder.git
+git clone https://github.com/letsbegincode/eye-relax-reminder.git
 cd eye-relax-reminder
 npm install
 npm start
